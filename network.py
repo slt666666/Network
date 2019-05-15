@@ -34,7 +34,7 @@ plotly.tools.set_credentials_file(username='slt666666', api_key='KEROY4DT9JraomP
 # # print(NLR_gene_info.iloc[0,:])
 
 # extract gene_distance info
-NLR_gene_info = pd.read_csv("NLR_gene_info.csv", index_col=0)
+NLR_gene_info = pd.read_csv("original_data/NLR_gene_info.csv", index_col=0)
 position_data = NLR_gene_info.iloc[:, [0,3,4,9]]
 position_data.columns = ["chr", "start", "end", "id"]
 
@@ -44,16 +44,16 @@ def calc_distance(data_from_chr):
     tmp_position_data = np.sort(tmp_position_data)
     distance = np.diff(tmp_position_data, n= 1)
     distance = np.array(distance)
-    distance = distance[distance < 50000]
-    plt.hist(distance)
-    plt.show()
+    # distance = distance[distance < 50000]
+    # plt.hist(distance)
+    # plt.show()
     distances.extend(distance)
 
 position_data.groupby(["chr"]).apply(calc_distance)
 # calc_distance(position_data[position_data["chr"] == "SL3.0ch01"])
 
-# distances = np.array(distances)
+distances = np.array(distances)
 # print(distances)
-# plt.hist(distances[distances < 50000])
+plt.hist(distances[distances < 100000])
 # plt.hist(distances)
-# plt.show()
+plt.show()
