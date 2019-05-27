@@ -9,32 +9,32 @@ import plotly
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-plotly.tools.set_credentials_file(username='slt666666', api_key='KEROY4DT9JraomPybSjQ')
+# plotly.tools.set_credentials_file(username='slt666666', api_key='KEROY4DT9JraomPybSjQ')
 
-# # extract only "gene" list from gff
-# gff_tomato = pd.read_table("original_data/ITAG3.2_gene_models.gff", header=None, skiprows=14)
-# gff_tomato = gff_tomato[gff_tomato.iloc[:, 2] == "gene"]
+# extract only "gene" list from gff
+# gff_coffea = pd.read_table("Coffee/original_data/coffea_canephora.gff3", header=None, skiprows=1)
+# gff_coffea = gff_coffea[gff_coffea.iloc[:, 2] == "gene"]
 # # print(gff_tomato.head())
 #
 # # extract NLR gene_ids from data_AKI
-# NLR_list = pd.read_csv("original_data/tomato_NLRs_from_AKI.csv")
-# NLR_list = np.sort(NLR_list.gene_short_na)
-# # print(NLR_list[0:10])
+# NLR_list = pd.read_csv("Coffee/original_data/coffee_NLR_id_class.csv")
+# print(NLR_list)
 #
 # # extract gene info
 # NLR_gene_info = pd.DataFrame()
-# for gene_id in NLR_list:
-#     each_gene_info = gff_tomato[gff_tomato.iloc[:,8].str.contains(gene_id)]
+# for gene_id in NLR_list["SequenceName"]:
+#     each_gene_info = gff_coffea[gff_coffea.iloc[:, 8].str.contains(gene_id)]
 #     each_gene_info["gene_id"] = gene_id
+#     each_gene_info["class"] = NLR_list.loc[NLR_list["SequenceName"] == gene_id, "class"].values
 #     NLR_gene_info = pd.concat([NLR_gene_info, each_gene_info])
 #
 # NLR_gene_info = pd.DataFrame(NLR_gene_info)
-# NLR_gene_info.to_csv("NLR_gene_info.csv")
-# # print(NLR_gene_info.head())
-# # print(NLR_gene_info.iloc[0,:])
+# NLR_gene_info.to_csv("Coffee/original_data/NLR_gene_info.csv")
+# print(NLR_gene_info.head())
+# print(NLR_gene_info.iloc[0,:])
 
 # extract gene_distance info
-NLR_gene_info = pd.read_csv("original_data/NLR_gene_info.csv", index_col=0)
+NLR_gene_info = pd.read_csv("Coffee/original_data/NLR_gene_info.csv", index_col=0)
 position_data = NLR_gene_info.iloc[:, [0,3,4,9]]
 position_data.columns = ["chr", "start", "end", "id"]
 
