@@ -37,7 +37,9 @@ class DistanceBasedMatrix:
             text=hovertext,
             hoverinfo="text"
         )
-        params.update(parameters.HeatMapParams.Distance.value)
+        ### additional parameters of heatmap
+        params.update(parameters.HeatMapParams[self.matrix_type].value)
+        
         trace = go.Heatmap(params)
         data = [trace]
 
@@ -119,7 +121,9 @@ class DistanceBasedMatrix:
 if __name__ == "__main__":
     clade_file = "original_data/tomato_clade.csv"
     gff_file = "original_data/tomato_NLR_gff.csv"
+    expression_file = "original_data/tomato_root_leaf_TPM.csv"
     threshold = 30000
 
-    Matrix = DistanceBasedMatrix(clade_file, gff_file, threshold)
+    # Matrix = DistanceBasedMatrix(clade_file, gff_file, threshold)
+    Matrix = DistanceBasedMatrix(clade_file, gff_file, threshold, "LogFC2", expression_file)
     Matrix.draw_heatmap("sample.html")

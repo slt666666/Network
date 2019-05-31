@@ -72,6 +72,7 @@ class DataMake:
 
         add_info = pd.read_csv(add_info)
 
+        ### extract expression values od Root and Leaf
         if type == "LogFC2":
             add_info = add_info.loc[:, ["gene_short_na", "Root_TPM", "Leaf_TPM"]]
             add_info.columns = ["id", "Root_TPM", "Leaf_TPM"]
@@ -87,11 +88,25 @@ class DataMake:
     ### make z_data for plotly heatmap
     def make_z_data(self, dist, type, position_data):
 
-        if type == "Distance":
-            z_data = copy.copy(dist)
-            z_data[z_data==0] = self.threshold
-            z_data[np.isnan(z_data)] = self.threshold
-            z_data[z_data>self.threshold] = self.threshold
+        threshold = self.threshold
+
+        ### matrix based on distance (default)
+        z_data = copy.copy(dist)
+        z_data[z_data==0] = threshold
+        z_data[np.isnan(z_data)] = threshold
+        z_data[z_data > threshold] = threshold
+
+        ### matrix based on Root/Leaf logFC2 values
+        if type == "LogFC2":
+            logFC2 = np.log2(position_data["Root_TPM"]) - np.log2(position_data["Leaf_TPM"])
+            logFC2 = logFC2.values[::-1]
+            logFC2[logFC2 > 10] = 10
+            logFC2[logFC2 < -10] = -10
+            logFC2[np.isnan(logFC2)] = 0
+            logFC2 = np.tile(logFC2, (position_data.shape[0],1)).T
+            logFC2[z_data >= threshold] = 0
+            z_data = logFC2
+
         else:
             pass
 
@@ -104,6 +119,36 @@ class DataMake:
         for yi, yy in enumerate(ids[::-1]):
             hovertext.append(list())
             for xi, xx in enumerate(ids):
-                hovertext[-1].append('1: {} {}<br />2: {} {}<br />Distance: {}'.format(yy, clades[::-1][yi], xx, clades[xi], dist[yi][xi]))
+
+                ### basic hover text
+                if type == "Distance":
+                    hovertext[-1].append('1: {} {}<br />2: {} {}<br />Distance: {}'.format(
+                            yy,
+                            clades[::-1][yi],
+                            xx,
+                            clades[xi],
+                            dist[yi][xi]
+                        )
+                    )
+
+                ### Root & Leaf expression data
+                elif type == "LogFC2":
+                    hovertext[-1].append('1: {} {}<br />2: {} {}<br />1: Root: {} Leaf: {}<br />2: Root: {} Leaf: {}<br />Distance: {}'.format(
+                            yy,
+                            clades[::-1][yi],
+                            xx,
+                            clades[xi],
+                            '{:.4f}'.format(position_data["Root_TPM"].values[::-1][yi]),
+                            '{:.4f}'.format(position_data["Leaf_TPM"].values[::-1][yi]),
+                            '{:.4f}'.format(position_data["Root_TPM"].values[xi]),
+                            '{:.4f}'.format(position_data["Leaf_TPM"].values[xi]),
+                            dist[yi][xi],
+                        )
+                    )
+
+                else:
+                    pass
+
+
 
         return hovertext
