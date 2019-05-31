@@ -1,11 +1,13 @@
 import random
-import make_data
 import pandas as pd
 import numpy as np
 import plotly.plotly as py
 import plotly.graph_objs as go
 from plotly.offline import iplot, plot
 from scipy.spatial import distance
+
+import make_data
+import parameters
 
 
 class DistanceBasedMatrix:
@@ -19,22 +21,22 @@ class DistanceBasedMatrix:
 
         ### make dataset
         data_make = make_data.DataMake(self.clade_csv, self.gff_csv, self.threshold)
-        dist, hovertext, position_data = data_make.make()
+        z_data, hovertext, position_data = data_make.make()
 
         id_clades = position_data["id_clade"]
         gene_num = position_data.shape[0]
         clades = position_data["clade"]
 
         ### base of heatmap
-        trace = go.Heatmap(
+        params = dict(
             x=id_clades,
             y=id_clades.values[::-1],
-            z=dist,
-            colorscale="Reds",
-            reversescale=True,
-            hoverinfo='text',
-            text=hovertext
+            z=z_data,
+            text=hovertext,
+            hoverinfo="text"
         )
+        params.update(parameters.HeatMapParams.Distance.value)
+        trace = go.Heatmap(params)
         data = [trace]
 
         ### add separate lines of clade
