@@ -12,15 +12,17 @@ import parameters
 
 class DistanceBasedMatrix:
 
-    def __init__(self, clade_csv, gff_csv, threshold):
+    def __init__(self, clade_csv, gff_csv, threshold, matrix_type="Distance", add_info=None):
         self.clade_csv = clade_csv
         self.gff_csv = gff_csv
         self.threshold = threshold
+        self.matrix_type = matrix_type
+        self.add_info = add_info
 
     def draw_heatmap(self, filename):
 
         ### make dataset
-        data_make = make_data.DataMake(self.clade_csv, self.gff_csv, self.threshold)
+        data_make = make_data.DataMake(self.clade_csv, self.gff_csv, self.threshold, self.matrix_type, self.add_info)
         z_data, hovertext, position_data = data_make.make()
 
         id_clades = position_data["id_clade"]
