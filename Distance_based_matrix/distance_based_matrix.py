@@ -86,7 +86,10 @@ class DistanceBasedMatrix:
 
         ### setting layout
         layout = go.Layout(
-            margin=dict(l=130, t=160),
+            margin=dict(
+                l=130,
+                t=160
+            ),
             width=750,
             height=750,
             autosize=False,
@@ -96,7 +99,9 @@ class DistanceBasedMatrix:
                     tickfont=dict(size=8)
             ),
             yaxis=dict(
-                tickfont=dict(size=8)
+                tickfont=dict(
+                    size=8
+                )
             ),
             shapes=lines
         )
