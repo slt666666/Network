@@ -98,11 +98,15 @@ class DistanceBasedMatrix:
             height=750,
             autosize=False,
             xaxis=dict(
-                    mirror="allticks",
-                    side="top",
-                    tickfont=dict(size=8)
+                mirror="allticks",
+                side="top",
+                showgrid=False,
+                tickfont=dict(
+                    size=8
+                )
             ),
             yaxis=dict(
+                showgrid=False,
                 tickfont=dict(
                     size=8
                 )
@@ -123,8 +127,9 @@ if __name__ == "__main__":
     gff_file = "original_data/tomato_NLR_gff.csv"
     expression_file = "original_data/tomato_root_leaf_TPM.csv"
     coexpression_file = "original_data/tomato_part_TPM.csv"
+    MADA_file = "original_data/tomato_MADA.csv"
     threshold = 30000
 
-    # Matrix = DistanceBasedMatrix(clade_file, gff_file, threshold)
-    Matrix = DistanceBasedMatrix(clade_file, gff_file, threshold, "Coexpression", coexpression_file)
+    Matrix = DistanceBasedMatrix(clade_file, gff_file, threshold)
+    # Matrix = DistanceBasedMatrix(clade_file, gff_file, threshold, "MADA", MADA_file)
     Matrix.draw_heatmap("sample.html")

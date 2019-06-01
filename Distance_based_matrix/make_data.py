@@ -83,8 +83,11 @@ class DataMake:
             position_data = pd.merge(position_data, add_info, on='id', how='left')
             position_data = position_data.fillna(0)
 
+        ### extract MADA HMM score
         elif type == "MADA":
-            pass
+            add_info = add_info.loc[:, ["ID", "HMM score", "Seq-F"]]
+            add_info.columns = ["id", "HMM_score", "Seq-F"]
+            position_data = pd.merge(position_data, add_info, on='id', how='left')
 
         return position_data
 
@@ -118,8 +121,14 @@ class DataMake:
             co_expression_matrix[z_data >= threshold] = 0
             z_data = co_expression_matrix
 
-        else:
-            pass
+        ### matrix based on MADA HMM score
+        elif type == "MADA":
+            MADA = position_data["HMM_score"]
+            MADA = MADA[::-1]
+            MADA = MADA.fillna(0)
+            MADA = np.tile(MADA, (position_data.shape[0],1)).T
+            MADA[z_data >= threshold] = np.nan
+            z_data = MADA
 
         return z_data
 
@@ -169,9 +178,19 @@ class DataMake:
                         )
                     )
 
-                else:
-                    pass
-
-
+                ### MADA HMM score & MADA start position
+                elif type == "MADA":
+                    hovertext[-1].append('1: {} {}<br />2: {} {}<br />1: HMM_score: {} Seq-F: {}<br />2: HMM_score: {} Seq-F: {}<br />Distance: {}'.format(
+                            yy,
+                            clades[::-1][yi],
+                            xx,
+                            clades[xi],
+                            position_data["HMM_score"].values[::-1][yi],
+                            position_data["Seq-F"].values[::-1][yi],
+                            position_data["HMM_score"].values[xi],
+                            position_data["Seq-F"].values[xi],
+                            dist[yi][xi],
+                        )
+                    )
 
         return hovertext
