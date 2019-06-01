@@ -72,14 +72,17 @@ class DataMake:
 
         add_info = pd.read_csv(add_info)
 
-        ### extract expression values od Root and Leaf
+        ### extract expression values of Root and Leaf
         if type == "LogFC2":
             add_info = add_info.loc[:, ["gene_short_na", "Root_TPM", "Leaf_TPM"]]
             add_info.columns = ["id", "Root_TPM", "Leaf_TPM"]
             position_data = pd.merge(position_data, add_info, on='id')
 
+        ### extract expression values of each points
         elif type == "Coexpression":
-            pass
+            position_data = pd.merge(position_data, add_info, on='id', how='left')
+            position_data = position_data.fillna(0)
+
         elif type == "MADA":
             pass
 
@@ -106,6 +109,14 @@ class DataMake:
             logFC2 = np.tile(logFC2, (position_data.shape[0],1)).T
             logFC2[z_data >= threshold] = 0
             z_data = logFC2
+
+        ### matrix based on Coexpression values
+        elif type == "Coexpression":
+            co_expression_matrix = np.corrcoef(position_data.iloc[:, 12:22])
+            self.origin_co_expression_matrix = copy.copy(co_expression_matrix)
+            co_expression_matrix = np.flip(co_expression_matrix, 0)
+            co_expression_matrix[z_data >= threshold] = 0
+            z_data = co_expression_matrix
 
         else:
             pass
@@ -142,6 +153,18 @@ class DataMake:
                             '{:.4f}'.format(position_data["Leaf_TPM"].values[::-1][yi]),
                             '{:.4f}'.format(position_data["Root_TPM"].values[xi]),
                             '{:.4f}'.format(position_data["Leaf_TPM"].values[xi]),
+                            dist[yi][xi],
+                        )
+                    )
+
+                ### Co expression data
+                elif type == "Coexpression":
+                    hovertext[-1].append('1: {} {}<br />2: {} {}<br />correlation coef: {}<br />Distance: {}'.format(
+                            yy,
+                            clades[::-1][yi],
+                            xx,
+                            clades[xi],
+                            self.origin_co_expression_matrix[position_data.shape[0] - 1 - yi][xi],
                             dist[yi][xi],
                         )
                     )
