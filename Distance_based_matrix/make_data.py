@@ -240,10 +240,7 @@ class PhylogeneticDataMake(DataMake):
         clades = position_data["clade"].values
 
         ### make distance matrix
-        dist = self.make_dist(tree)
-        dist = dist.loc[position_data.id, position_data.id]
-        dist = np.array(dist)
-        dist = np.flip(dist, 0)
+        dist = self.make_dist(tree, position_data)
 
         ### setting z_data for heatmap
         z_data = self.make_z_data(dist, matrix_type, position_data)
@@ -254,7 +251,7 @@ class PhylogeneticDataMake(DataMake):
         return z_data, hovertext, position_data
 
     ### make phylogenetic distance matrix
-    def make_dist(self, tree):
+    def make_dist(self, tree, position_data):
 
         pdm = tree.phylogenetic_distance_matrix()
         labels = []
@@ -269,5 +266,9 @@ class PhylogeneticDataMake(DataMake):
         dist = pd.DataFrame(dist)
         dist.index = labels
         dist.columns = labels
+
+        dist = dist.loc[position_data.id, position_data.id]
+        dist = np.array(dist)
+        dist = np.flip(dist, 0)
 
         return dist
