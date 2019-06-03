@@ -19,11 +19,15 @@ class DistanceBasedMatrix:
         self.matrix_type = matrix_type
         self.add_info = add_info
 
+    def make_data(self):
+
+        data_make = make_data.DataMake(self.clade_csv, self.gff_csv, self.threshold, self.matrix_type, self.add_info)
+        return data_make.make()
+
     def draw_heatmap(self, filename):
 
         ### make dataset
-        data_make = make_data.DataMake(self.clade_csv, self.gff_csv, self.threshold, self.matrix_type, self.add_info)
-        z_data, hovertext, position_data = data_make.make()
+        self.make_data()
 
         id_clades = position_data["id_clade"]
         gene_num = position_data.shape[0]
@@ -121,6 +125,18 @@ class DistanceBasedMatrix:
 
         ### draw
         plot(fig, filename=filename)
+
+
+class PhylogeneticDistanceBasedMatrix(DistanceBasedMatrix):
+
+    def __init__(self, clade_csv, nexus_tree, threshold, matrix_type="Distance", add_info=None):
+        super().__init()__(clade_csv, threshold, matrix_type, add_info)
+        self.nexus_tree = nexus_tree
+
+    def make_data(self):
+        data_make = make_data.PhylogeneticDataMake(self.clade_csv, self.gff_csv, self.threshold, self.matrix_type, self.add_info)
+        return data_make.make()
+
 
 if __name__ == "__main__":
     clade_file = "original_data/tomato_clade.csv"

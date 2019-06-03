@@ -44,6 +44,20 @@ class DataMake:
         clades = position_data["clade"].values
         starts = position_data["start"].values
 
+        ### make distance matrix
+        dist = self.make_dist(starts, chrs)
+
+        ### setting z_data for heatmap
+        z_data = self.make_z_data(dist, matrix_type, position_data)
+
+        ### make text of cells
+        hovertext = self.make_hover_text(ids, clades, dist, matrix_type, position_data)
+
+        return z_data, hovertext, position_data
+
+    ### make distance matrix
+    def make_dist(self, starts, chrs):
+
         ### calculate distance all combination
         dist = np.stack([np.array(starts), np.zeros(len(starts))], 1)
         dist = distance.cdist(dist, dist, metric="euclidean")
@@ -58,14 +72,7 @@ class DataMake:
         dist = np.array(dist)
         dist = np.flip(dist, 0)
 
-        ### setting z_data for heatmap
-        z_data = self.make_z_data(dist, matrix_type, position_data)
-
-        ### make text of cells
-        hovertext = self.make_hover_text(ids, clades, dist, matrix_type, position_data)
-
-        return z_data, hovertext, position_data
-
+        return dist
 
     ### add additional information
     def make_additional_data(self, position_data, type, add_info):
