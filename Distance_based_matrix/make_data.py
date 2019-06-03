@@ -1,9 +1,10 @@
 import copy
+import dendropy
 import pandas as pd
 import numpy as np
 from scipy.spatial import distance
 
-
+### for genetic linkage distance
 class DataMake:
 
     def __init__(self, clade_csv, gff_csv, threshold, matrix_type, add_info):
@@ -201,3 +202,72 @@ class DataMake:
                     )
 
         return hovertext
+
+
+### for phylogenetic distance
+class PhylogeneticDataMake(DataMake):
+
+    def __init__(self, clade_csv, gff_csv, nexus_tree, threshold, matrix_type, add_info):
+        super().__init__(clade_csv, gff_csv, threshold, matrix_type, add_info)
+        self.nexus_tree = nexus_tree
+
+    ### make phylogenetic distance matrix
+    def make(self):
+
+        ### define
+        matrix_type = self.matrix_type
+        add_info = self.add_info
+
+        ### clade information
+        clade_info = pd.read_csv(self.clade_csv)
+        clade_info.columns = ["id", "clade"]
+
+        ### distance info
+        tree = dendropy.Tree.get(path=self.nexus_tree, schema="nexus")
+
+        ### merge data & check other information
+        position_data = clade_info
+
+        if add_info != None and matrix_type != "Distance":
+            position_data = self.make_additional_data(position_data, matrix_type, add_info)
+
+        ### sort and add new ids
+        position_data = position_data.sort_values(["clade", "id"])
+        position_data["id_clade"] = position_data["id"].str.cat(position_data["clade"], sep="-")
+
+        ### each gff information
+        ids = position_data["id"].values
+        clades = position_data["clade"].values
+
+        ### make distance matrix
+        dist = self.make_dist(tree)
+        dist = dist.loc[position_data.id, position_data.id]
+        dist = np.array(dist)
+        dist = np.flip(dist, 0)
+
+        ### setting z_data for heatmap
+        z_data = self.make_z_data(dist, matrix_type, position_data)
+
+        ### make text of cells
+        hovertext = self.make_hover_text(ids, clades, dist, matrix_type, position_data)
+
+        return z_data, hovertext, position_data
+
+    ### make phylogenetic distance matrix
+    def make_dist(self, tree):
+
+        pdm = tree.phylogenetic_distance_matrix()
+        labels = []
+        dist = []
+        for taxon1 in tree.taxon_namespace:
+            labels.append(taxon1.label)
+            each_rows = []
+            for taxon2 in tree.taxon_namespace:
+                weighted_patristic_distance = pdm.patristic_distance(taxon1, taxon2)
+                each_rows.append(weighted_patristic_distance)
+            dist.append(each_rows)
+        dist = pd.DataFrame(dist)
+        dist.index = labels
+        dist.columns = labels
+
+        return dist

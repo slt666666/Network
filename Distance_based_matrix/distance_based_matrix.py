@@ -27,7 +27,7 @@ class DistanceBasedMatrix:
     def draw_heatmap(self, filename):
 
         ### make dataset
-        self.make_data()
+        z_data, hovertext, position_data = self.make_data()
 
         id_clades = position_data["id_clade"]
         gene_num = position_data.shape[0]
@@ -129,12 +129,12 @@ class DistanceBasedMatrix:
 
 class PhylogeneticDistanceBasedMatrix(DistanceBasedMatrix):
 
-    def __init__(self, clade_csv, nexus_tree, threshold, matrix_type="Distance", add_info=None):
-        super().__init()__(clade_csv, threshold, matrix_type, add_info)
+    def __init__(self, clade_csv, gff_csv, nexus_tree, threshold, matrix_type="Distance", add_info=None):
+        super().__init__(clade_csv, gff_csv, threshold, matrix_type, add_info)
         self.nexus_tree = nexus_tree
 
     def make_data(self):
-        data_make = make_data.PhylogeneticDataMake(self.clade_csv, self.gff_csv, self.threshold, self.matrix_type, self.add_info)
+        data_make = make_data.PhylogeneticDataMake(self.clade_csv, self.gff_csv, self.nexus_tree, self.threshold, self.matrix_type, self.add_info)
         return data_make.make()
 
 
@@ -144,8 +144,10 @@ if __name__ == "__main__":
     expression_file = "original_data/tomato_root_leaf_TPM.csv"
     coexpression_file = "original_data/tomato_part_TPM.csv"
     MADA_file = "original_data/tomato_MADA.csv"
-    threshold = 30000
+    tree_file = "original_data/tomato_tree.nex"
+    threshold = 1
 
-    Matrix = DistanceBasedMatrix(clade_file, gff_file, threshold)
+    # Matrix = DistanceBasedMatrix(clade_file, gff_file, threshold)
     # Matrix = DistanceBasedMatrix(clade_file, gff_file, threshold, "MADA", MADA_file)
+    Matrix = PhylogeneticDistanceBasedMatrix(clade_file, gff_file, tree_file, threshold)
     Matrix.draw_heatmap("sample.html")
