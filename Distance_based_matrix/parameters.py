@@ -52,13 +52,13 @@ class HeatMapParams(Enum):
 ### for test set
 class TestParams(Enum):
 
-    clade_file = "original_data/tomato_clade.csv"
-    gff_file = "original_data/tomato_NLR_gff.csv"
-    expression_file = "original_data/tomato_root_leaf_TPM.csv"
-    coexpression_file = "original_data/tomato_part_TPM.csv"
-    MADA_file = "original_data/tomato_MADA.csv"
-    tree_file = "original_data/tomato_tree.nex"
-    ordered_file = "original_data/tomato_NLR_order.csv"
+    clade_file = "sample_data/tomato_clade.csv"
+    gff_file = "sample_data/tomato_NLR_gff.csv"
+    expression_file = "sample_data/tomato_root_leaf_TPM.csv"
+    coexpression_file = "sample_data/tomato_part_TPM.csv"
+    MADA_file = "sample_data/tomato_MADA.csv"
+    tree_file = "sample_data/tomato_tree.nex"
+    ordered_file = "sample_data/tomato_NLR_order.csv"
     distance_threshold = 30000
     phylogenetic_distance_threshold = 1
 
