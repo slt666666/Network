@@ -7,9 +7,10 @@ from scipy.spatial import distance
 ### for genetic linkage distance
 class DataMake:
 
-    def __init__(self, clade_csv, gff_csv, threshold, matrix_type, add_info):
+    def __init__(self, clade_csv, gff_csv, ordered_csv, threshold, matrix_type, add_info):
         self.clade_csv = clade_csv
         self.gff_csv = gff_csv
+        self.ordered_csv = ordered_csv
         self.threshold = threshold
         self.matrix_type = matrix_type
         self.add_info = add_info
@@ -207,8 +208,8 @@ class DataMake:
 ### for phylogenetic distance
 class PhylogeneticDataMake(DataMake):
 
-    def __init__(self, clade_csv, gff_csv, nexus_tree, threshold, matrix_type, add_info):
-        super().__init__(clade_csv, gff_csv, threshold, matrix_type, add_info)
+    def __init__(self, clade_csv, gff_csv, ordered_csv, nexus_tree, threshold, matrix_type, add_info):
+        super().__init__(clade_csv, gff_csv, ordered_csv, threshold, matrix_type, add_info)
         self.nexus_tree = nexus_tree
 
     ### make phylogenetic distance matrix
@@ -231,8 +232,14 @@ class PhylogeneticDataMake(DataMake):
         if add_info != None and matrix_type != "Distance":
             position_data = self.make_additional_data(position_data, matrix_type, add_info)
 
-        ### sort and add new ids
-        position_data = position_data.sort_values(["clade", "id"])
+        ### sort and add new ids, ordered genes if ordered_csv exist
+        if self.ordered_csv == None:
+            position_data = position_data.sort_values(["clade", "id"])
+        else:
+            NLR_order = pd.read_csv(self.ordered_csv, header=None)
+            position_data.index = position_data["id"].values
+            position_data = position_data.loc[NLR_order.iloc[:, 0].values, :]
+
         position_data["id_clade"] = position_data["id"].str.cat(position_data["clade"], sep="-")
 
         ### each gff information

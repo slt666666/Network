@@ -48,3 +48,92 @@ class HeatMapParams(Enum):
             ticks = 'outside'
         )
      )
+
+### for test set
+class TestParams(Enum):
+
+    clade_file = "original_data/tomato_clade.csv"
+    gff_file = "original_data/tomato_NLR_gff.csv"
+    expression_file = "original_data/tomato_root_leaf_TPM.csv"
+    coexpression_file = "original_data/tomato_part_TPM.csv"
+    MADA_file = "original_data/tomato_MADA.csv"
+    tree_file = "original_data/tomato_tree.nex"
+    ordered_file = "original_data/tomato_NLR_order.csv"
+    distance_threshold = 30000
+    phylogenetic_distance_threshold = 1
+
+    Distance = dict(
+        clade_csv=clade_file,
+        gff_csv=gff_file,
+        ordered_csv=None,
+        threshold=distance_threshold,
+        matrix_type="Distance",
+        add_info=None
+    )
+
+    LogFC2 = dict(
+        clade_csv=clade_file,
+        gff_csv=gff_file,
+        ordered_csv=None,
+        threshold=distance_threshold,
+        matrix_type="LogFC2",
+        add_info=expression_file
+    )
+
+    Coexpression = dict(
+        clade_csv=clade_file,
+        gff_csv=gff_file,
+        ordered_csv=None,
+        threshold=distance_threshold,
+        matrix_type="Coexpression",
+        add_info=coexpression_file
+    )
+
+    MADA = dict(
+        clade_csv=clade_file,
+        gff_csv=gff_file,
+        ordered_csv=None,
+        threshold=distance_threshold,
+        matrix_type="MADA",
+        add_info=MADA_file
+    )
+
+    PhyloDistance = dict(
+        clade_csv=clade_file,
+        gff_csv=gff_file,
+        ordered_csv=None,
+        nexus_tree=tree_file,
+        threshold=phylogenetic_distance_threshold,
+        matrix_type="Distance",
+        add_info=None
+    )
+
+    PhyloLogFC2 = dict(
+        clade_csv=clade_file,
+        gff_csv=gff_file,
+        ordered_csv=None,
+        nexus_tree=tree_file,
+        threshold=phylogenetic_distance_threshold,
+        matrix_type="LogFC2",
+        add_info=expression_file
+    )
+
+    PhyloCoexpression = dict(
+        clade_csv=clade_file,
+        gff_csv=gff_file,
+        ordered_csv=None,
+        nexus_tree=tree_file,
+        threshold=phylogenetic_distance_threshold,
+        matrix_type="Coexpression",
+        add_info=coexpression_file
+    )
+
+    PhyloMADA = dict(
+        clade_csv=clade_file,
+        gff_csv=gff_file,
+        ordered_csv=None,
+        nexus_tree=tree_file,
+        threshold=phylogenetic_distance_threshold,
+        matrix_type="MADA",
+        add_info=MADA_file
+    )
