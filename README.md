@@ -1,5 +1,5 @@
 # Network
-Sandbox for Gene Network visualize & analyze tools
+Sandbox for visualizing & analyzing Gene Network tools
 
 ## Distance_based_matrix
 * visualize cluster based on distance between genes.
