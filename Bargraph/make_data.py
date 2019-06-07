@@ -5,11 +5,12 @@ import pandas as pd
 
 class DataMake:
 
-    def __init__(self, bar_info, color_info, bar_type, color_type):
+    def __init__(self, bar_info, color_info, bar_type, color_type, plant):
         self.bar_info = bar_info
         self.color_info = color_info
         self.bar_type = bar_type
         self.color_type = color_type
+        self.plant = plant
 
 
     def make(self):
@@ -29,7 +30,7 @@ class DataMake:
         if self.bar_type == "Conserved":
 
             ### extract phylogenetic distance data from tree
-            tree = dendropy.Tree.get(path=self.bar_info, schema="nexus")
+            tree = dendropy.Tree.get(path=self.bar_info, schema="newick")
             pdm = tree.phylogenetic_distance_matrix()
 
             labels = []
@@ -46,9 +47,19 @@ class DataMake:
             distances.index = labels
             distances.columns = labels
 
+            plant_header = dict(
+                Arabidopsis="AT",
+                Coffea="Cc",
+                Spinach="Spo",
+                Sugarbeet="Bv",
+                Ashtree="FRAEX",
+                Sweetpotato="itf"
+            )
+
+
             ### extract species specific (tomato/other) ids
             tomato_ids = distances.index[distances.index.str.contains("Solyc")].values
-            other_ids = distances.index[distances.index.str.contains("itf")].values
+            other_ids = distances.index[distances.index.str.contains(plant_header[self.plant])].values
 
             bar_data = distances.loc[tomato_ids, other_ids].min(axis=1)
             bar_data = bar_data.sort_values()

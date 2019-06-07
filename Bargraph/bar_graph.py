@@ -10,16 +10,17 @@ import make_data
 
 class BarGraph:
 
-    def __init__(self, bar_info, color_info, bar_type, color_type):
+    def __init__(self, bar_info, color_info, bar_type, color_type, plant=None):
         self.bar_info = bar_info
         self.color_info = color_info
         self.bar_type = bar_type
         self.color_type = color_type
+        self.plant = plant
 
     ### treat dataset
     def make_data(self):
 
-        data_make = make_data.DataMake(self.bar_info, self.color_info, self.bar_type, self.color_type)
+        data_make = make_data.DataMake(self.bar_info, self.color_info, self.bar_type, self.color_type, self.plant)
         return data_make.make()
 
     ### draw graph
@@ -47,7 +48,7 @@ class BarGraph:
             ),
             width=1000,
             height=600,
-            title='Conserved btw Tomato/Sweetpotato & colored MADA',
+            title='Conserved btw Tomato/{} & colored MADA'.format(self.plant),
             annotations=annotations
         )
 
@@ -56,9 +57,9 @@ class BarGraph:
             data=data,
             layout=layout
         )
-        plot(fig, filename='sample.html')
+        plot(fig, filename='{}.html'.format(self.plant))
 
 
 if __name__ == "__main__":
-    bar_graph = BarGraph("original_data/sweetpotato_tree.nex", "sample_data/tomato_MADA.csv", "Conserved", "MADA")
+    bar_graph = BarGraph("original_data/7species.tree", "sample_data/tomato_MADA.csv", "Conserved", "MADA", "Arabidopsis")
     bar_graph.draw_bargraph()
