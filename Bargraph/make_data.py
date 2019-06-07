@@ -1,3 +1,4 @@
+import copy
 import dendropy
 import numpy as np
 import pandas as pd
@@ -108,7 +109,23 @@ class DataMake:
 
         ### to color Root/Leaf specific
         elif self.color_type == "LogFC2":
-            pass
+
+            LogFC2 = pd.read_csv(self.color_info)
+            LogFC2 = LogFC2.loc[:, ["gene_short_na", "Root_TPM", "Leaf_TPM"]]
+            LogFC2.columns = ["id", "Root_TPM", "Leaf_TPM"]
+
+            ### calculate logFC2
+            colors_data = np.log2(LogFC2["Root_TPM"]) - np.log2(logFC2["Leaf_TPM"])
+            logFC2_values = copy.copy(colors_data)
+
+            ### adjust for color changes
+            logFC2_values[logFC2_values > 10] = 10
+            logFC2_values[logFC2_values < -10] = -10
+            logFC2_values[np.isnan(logFC2_values)] = 0
+            '''
+            color_change_ids =
+            colors =
+            '''
 
         return colors, colors_data
 
