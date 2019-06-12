@@ -160,7 +160,7 @@ if __name__ == "__main__":
         "PhyloMADA" : "PhyloDistance" + MADA motif HMM scores
     '''
 
-    matrix_type = "ID"
+    matrix_type = "LogFC2"
 
     Matrix = DistanceBasedMatrix(**parameters.TestParams[matrix_type].value)
     # Matrix = PhylogeneticDistanceBasedMatrix(**parameters.TestParams[matrix_type].value)

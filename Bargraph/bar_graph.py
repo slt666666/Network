@@ -61,5 +61,5 @@ class BarGraph:
 
 
 if __name__ == "__main__":
-    bar_graph = BarGraph("original_data/7species.tree", "sample_data/tomato_MADA.csv", "Conserved", "MADA", "Arabidopsis")
+    bar_graph = BarGraph("original_data/7species.tree", "sample_data/tomato_root_leaf_TPM.csv", "Conserved", "LogFC2", "Arabidopsis")
     bar_graph.draw_bargraph()

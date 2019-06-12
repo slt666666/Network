@@ -115,17 +115,27 @@ class DataMake:
             LogFC2.columns = ["id", "Root_TPM", "Leaf_TPM"]
 
             ### calculate logFC2
-            colors_data = np.log2(LogFC2["Root_TPM"]) - np.log2(logFC2["Leaf_TPM"])
-            logFC2_values = copy.copy(colors_data)
+            colors_data = np.log2(LogFC2["Root_TPM"]) - np.log2(LogFC2["Leaf_TPM"])
+            logFC2_values = colors_data
+            LogFC2["LogFC2"] = logFC2_values
+            colors_data = LogFC2
 
             ### adjust for color changes
             logFC2_values[logFC2_values > 10] = 10
             logFC2_values[logFC2_values < -10] = -10
             logFC2_values[np.isnan(logFC2_values)] = 0
-            '''
-            color_change_ids =
-            colors =
-            '''
+            LogFC2["for_color"] = logFC2_values
+
+            color_change_ids = ordered_ids.isin(LogFC2[LogFC2.loc[:, "for_color"] > 5].id.values)
+            colors[color_change_ids] = 'rgb(255, 0, 0)'
+            color_change_ids = ordered_ids.isin(LogFC2[(LogFC2.loc[:, "for_color"] <= 5) & (LogFC2.loc[:, "for_color"] > 0)].id.values)
+            colors[color_change_ids] = 'rgb(255, 120, 120)'
+            color_change_ids = ordered_ids.isin(LogFC2[LogFC2.loc[:, "for_color"] == 0].id.values)
+            colors[color_change_ids] = 'rgb(120, 120, 120)'
+            color_change_ids = ordered_ids.isin(LogFC2[(LogFC2.loc[:, "for_color"] < 0) & (LogFC2.loc[:, "for_color"] > -5)].id.values)
+            colors[color_change_ids] = 'rgb(120, 120, 255)'
+            color_change_ids = ordered_ids.isin(LogFC2[LogFC2.loc[:, "for_color"] < -5].id.values)
+            colors[color_change_ids] = 'rgb(0, 0, 255)'
 
         return colors, colors_data
 
@@ -133,18 +143,30 @@ class DataMake:
     def make_bar_text(self, bar_data, colors_data):
 
         bar_text = []
+        clade_info = pd.read_csv("sample_data/tomato_clade.csv")
+        clade_info.columns = ["id", "clade"]
 
-        if self.bar_type == "Conserved":
-            clade_info = pd.read_csv("sample_data/tomato_clade.csv")
-            clade_info.columns = ["id", "clade"]
-            for id in bar_data.index.values:
-                try:
-                    clade = clade_info.loc[clade_info["id"] == id, "clade"].values[0]
-                except:
-                    clade = "NA"
+        for id in bar_data.index.values:
+
+            ### extract clade information
+            try:
+                clade = clade_info.loc[clade_info["id"] == id, "clade"].values[0]
+            except:
+                clade = "NA"
+
+            ### add MADA information
+            if self.color_type == "MADA":
                 try:
                     HMM_score = colors_data.loc[colors_data["id"] == id, "HMM_score"].values[0]
                     bar_text.append("HMM_score: {} <br />clade: {}".format(HMM_score, clade))
+                except:
+                    bar_text.append("clade: {}".format(clade))
+
+            ### add LogFC2 information
+            elif self.color_type == "LogFC2":
+                try:
+                    LogFC2 = colors_data.loc[colors_data["id"] == id, "LogFC2"].values[0]
+                    bar_text.append("LogFC2: {} <br />clade: {}".format(LogFC2, clade))
                 except:
                     bar_text.append("clade: {}".format(clade))
 
