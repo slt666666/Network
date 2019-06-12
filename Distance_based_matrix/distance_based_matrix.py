@@ -150,6 +150,7 @@ if __name__ == "__main__":
         "Coexpression" : "Distance" + Coexpression using TPM of some parts
         "MADA" : "Distance" + MADA motif HMM scores
         "Direction" : "Distance" + gene direction
+        "ID" : "Distance" + Integrated domain
 
     PhylogeneticDistanceBasedMatrix()
 
@@ -159,7 +160,7 @@ if __name__ == "__main__":
         "PhyloMADA" : "PhyloDistance" + MADA motif HMM scores
     '''
 
-    matrix_type = "Direction"
+    matrix_type = "ID"
 
     Matrix = DistanceBasedMatrix(**parameters.TestParams[matrix_type].value)
     # Matrix = PhylogeneticDistanceBasedMatrix(**parameters.TestParams[matrix_type].value)

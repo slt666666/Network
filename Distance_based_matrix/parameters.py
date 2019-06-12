@@ -75,6 +75,19 @@ class HeatMapParams(Enum):
         )
      )
 
+     ID = dict(
+        colorscale="Reds",
+        reversescale=False,
+        # colorbar = dict(
+        #     title = 'HMM_score',
+        #     titleside = 'top',
+        #     tickmode = 'array',
+        #     tickvals = [0,5,10,15,20,25,30,35],
+        #     ticktext = ["0","5","10","15","20","25","30","35"],
+        #     ticks = 'outside'
+        # )
+     )
+
 ### for test set
 class TestParams(Enum):
 
@@ -83,6 +96,7 @@ class TestParams(Enum):
     expression_file = "sample_data/tomato_root_leaf_TPM.csv"
     coexpression_file = "sample_data/tomato_part_TPM.csv"
     MADA_file = "sample_data/tomato_MADA.csv"
+    ID_file = "sample_data/tomato_ID.csv"
     tree_file = "sample_data/tomato_tree.nex"
     ordered_file = "sample_data/tomato_NLR_order.csv"
     distance_threshold = 30000
@@ -131,6 +145,15 @@ class TestParams(Enum):
         threshold=distance_threshold,
         matrix_type="Direction",
         add_info=None
+    )
+
+    ID = dict(
+        clade_csv=clade_file,
+        gff_csv=gff_file,
+        ordered_csv=None,
+        threshold=distance_threshold,
+        matrix_type="ID",
+        add_info=ID_file
     )
 
     PhyloDistance = dict(

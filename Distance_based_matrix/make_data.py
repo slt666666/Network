@@ -98,6 +98,9 @@ class DataMake:
             add_info.columns = ["id", "HMM_score", "Seq-F"]
             position_data = pd.merge(position_data, add_info, on='id', how='left')
 
+        elif type == "ID":
+            position_data["Integrated"] = position_data.loc[:, "id"].isin(add_info["id"].values)
+
         return position_data
 
     ### make z_data for plotly heatmap
@@ -139,7 +142,7 @@ class DataMake:
             MADA[z_data >= threshold] = np.nan
             z_data = MADA
 
-        ### convert direction btw 2 genes to values
+        ### matrix based on direction btw 2 genes
         elif type == "Direction":
             direction = position_data.loc[:, ["id", "strand"]]
             direction = direction.replace({"+":1, "-":2})
@@ -151,6 +154,15 @@ class DataMake:
             direction[z_data >= threshold] = 0
             direction = np.where(direction == 6, 1, direction)
             z_data = direction
+
+        ### matrix based on Integrated domain
+        elif type == "ID":
+            ID = np.zeros(position_data.shape[0])
+            ID[position_data["Integrated"]] = 1
+            ID = ID[::-1]
+            ID = np.tile(ID, (position_data.shape[0],1)).T
+            ID[z_data >= threshold] = np.nan
+            z_data = ID
 
         return z_data
 
@@ -247,6 +259,19 @@ class DataMake:
                                 dist[yi][xi],
                             )
                         )
+
+                    ### Integrated domain
+                elif type == "ID":
+                    hovertext[-1].append('1: {} {}<br />2: {} {}<br />1: Integrated Domain: {}<br />2: Integrated Domain: {}<br />Distance: {}'.format(
+                            yy,
+                            clades[::-1][yi],
+                            xx,
+                            clades[xi],
+                            "○" if position_data["Integrated"].values[::-1][yi] else "×",
+                            "○" if position_data["Integrated"].values[xi] else "×",
+                            dist[yi][xi],
+                        )
+                    )
 
         return hovertext
 
