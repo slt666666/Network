@@ -139,6 +139,19 @@ class DataMake:
             MADA[z_data >= threshold] = np.nan
             z_data = MADA
 
+        ### convert direction btw 2 genes to values
+        elif type == "Direction":
+            direction = position_data.loc[:, ["id", "strand"]]
+            direction = direction.replace({"+":1, "-":2})
+            direction = np.matrix(direction.loc[:, "strand"].values)
+            direction = np.dot(direction.T, direction+1)
+            direction = np.triu(direction)
+            direction = direction + direction.T - np.diag(np.diag(direction))
+            direction = np.flip(direction, 0)
+            direction[z_data >= threshold] = 0
+            direction = np.where(direction == 6, 1, direction)
+            z_data = direction
+
         return z_data
 
     ### make each cell text
@@ -201,6 +214,39 @@ class DataMake:
                             dist[yi][xi],
                         )
                     )
+
+                ### direction of each genes
+                elif type == "Direction":
+
+                    if np.isnan(dist[yi][xi]):
+                        first_direction = "nan"
+                        second_direction = "nan"
+                    else:
+                        first_direction = "→" if position_data["strand"].values[::-1][yi] == "+" else "←"
+                        second_direction = "→" if position_data["strand"].values[xi] == "+" else "←"
+
+                    if xi > position_data.shape[0] - 1 - yi:
+                        hovertext[-1].append('1: {} {}<br />2: {} {}<br />direction: {} {}<br />Distance: {}'.format(
+                                yy,
+                                clades[::-1][yi],
+                                xx,
+                                clades[xi],
+                                first_direction,
+                                second_direction,
+                                dist[yi][xi],
+                            )
+                        )
+                    else:
+                        hovertext[-1].append('1: {} {}<br />2: {} {}<br />direction: {} {}<br />Distance: {}'.format(
+                                yy,
+                                clades[::-1][yi],
+                                xx,
+                                clades[xi],
+                                second_direction,
+                                first_direction,
+                                dist[yi][xi],
+                            )
+                        )
 
         return hovertext
 

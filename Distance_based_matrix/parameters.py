@@ -49,6 +49,32 @@ class HeatMapParams(Enum):
         )
      )
 
+     Direction = dict(
+        colorscale=[
+            [0, "rgb(220, 220, 220)"],
+            [0.2, "rgb(220, 220, 220)"],
+            [0.2, "red"],
+            [0.4, "red"],
+            [0.4, "blue"],
+            [0.6, "blue"],
+            [0.6, "orange"],
+            [0.8, "orange"],
+            [0.8, "magenta"],
+            [1.0, "magenta"]
+        ],
+        colorbar = dict(
+            title = 'Gene direction',
+            titleside = 'top',
+            tickmode = 'array',
+            tickvals = [0.4,1.2,2.0,2.8,3.6],
+            tickwidth = 2,
+            ticktext = ["nan", "TH ← ←", "HT → →", "HH → ←", "TT ← →"],
+            ticks = 'outside',
+            thickness = 20,
+            len = 0.5
+        )
+     )
+
 ### for test set
 class TestParams(Enum):
 
@@ -96,6 +122,15 @@ class TestParams(Enum):
         threshold=distance_threshold,
         matrix_type="MADA",
         add_info=MADA_file
+    )
+
+    Direction = dict(
+        clade_csv=clade_file,
+        gff_csv=gff_file,
+        ordered_csv=None,
+        threshold=distance_threshold,
+        matrix_type="Direction",
+        add_info=None
     )
 
     PhyloDistance = dict(

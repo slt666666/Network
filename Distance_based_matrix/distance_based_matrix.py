@@ -4,7 +4,6 @@ import numpy as np
 import plotly.plotly as py
 import plotly.graph_objs as go
 from plotly.offline import iplot, plot
-from scipy.spatial import distance
 
 import make_data
 import parameters
@@ -150,6 +149,7 @@ if __name__ == "__main__":
         "LogFC2" : "Distance" + LogFC2 Root/Leef TPM values
         "Coexpression" : "Distance" + Coexpression using TPM of some parts
         "MADA" : "Distance" + MADA motif HMM scores
+        "Direction" : "Distance" + gene direction
 
     PhylogeneticDistanceBasedMatrix()
 
@@ -158,8 +158,8 @@ if __name__ == "__main__":
         "PhyloCoexpression" : "PhyloDistance" + Coexpression using TPM of some parts
         "PhyloMADA" : "PhyloDistance" + MADA motif HMM scores
     '''
-    
-    matrix_type = "Distance"
+
+    matrix_type = "Direction"
 
     Matrix = DistanceBasedMatrix(**parameters.TestParams[matrix_type].value)
     # Matrix = PhylogeneticDistanceBasedMatrix(**parameters.TestParams[matrix_type].value)
