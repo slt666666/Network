@@ -6,7 +6,8 @@ import pandas as pd
 
 class DataMake:
 
-    def __init__(self, bar_info, color_info, bar_type, color_type, plant):
+    def __init__(self, clade_info, bar_info, color_info, bar_type, color_type, plant):
+        self.clade_info = clade_info
         self.bar_info = bar_info
         self.color_info = color_info
         self.bar_type = bar_type
@@ -20,8 +21,9 @@ class DataMake:
         colors, colors_data = self.make_colors(bar_data.index)
         bar_text = self.make_bar_text(bar_data, colors_data)
         annotations = self.make_annotations(bar_data)
+        title = self.make_title()
 
-        return bar_data, bar_text, colors, annotations
+        return bar_data, bar_text, colors, annotations, title
 
 
     ### make each bar values
@@ -72,7 +74,7 @@ class DataMake:
             MADA = MADA.loc[:, ["HMM score", "Seq-F"]]
             MADA.columns = ["HMM_score", "Seq-F"]
             MADA = MADA.sort_values("HMM_score")
-            bar_data = MADA
+            bar_data = MADA["HMM_score"]
 
         elif self.bar_type == "LogFC2":
             pass
@@ -143,7 +145,7 @@ class DataMake:
     def make_bar_text(self, bar_data, colors_data):
 
         bar_text = []
-        clade_info = pd.read_csv("sample_data/tomato_clade.csv")
+        clade_info = pd.read_csv(self.clade_info)
         clade_info.columns = ["id", "clade"]
 
         for id in bar_data.index.values:
@@ -196,20 +198,23 @@ class DataMake:
         )
 
         for k, v in CNLs.items():
-            arrow_info = dict(
-                x=np.where(bar_data.index.values == k)[0][0],
-                y=bar_data.loc[k],
-                xref='x',
-                yref='y',
-                text=v,
-                showarrow=True,
-                arrowhead=1,
-                arrowwidth=0.8,
-                ax=0,
-                ay=-100,
-                hovertext=v
-            )
-            annotations.append(arrow_info)
+            try:
+                arrow_info = dict(
+                    x=np.where(bar_data.index.values == k)[0][0],
+                    y=bar_data.loc[k],
+                    xref='x',
+                    yref='y',
+                    text=v,
+                    showarrow=True,
+                    arrowhead=1,
+                    arrowwidth=0.8,
+                    ax=0,
+                    ay=-100,
+                    hovertext=v
+                )
+                annotations.append(arrow_info)
+            except:
+                pass
 
         ### mean annotations
         mean_info = dict(
@@ -220,3 +225,20 @@ class DataMake:
         annotations.append(mean_info)
 
         return annotations
+
+    ### make title
+    def make_title(self):
+
+        if self.bar_type == "Conserved":
+            title = 'Conserved btw Tomato/{}'.format(self.plant)
+
+        elif self.bar_type == "MADA":
+            title = 'HMM score'.format(self.plant)
+
+        if self.color_type == "Conserved":
+            pass
+
+        elif self.color_type == "MADA":
+            title = title + " & colored MADA"
+
+        return title
