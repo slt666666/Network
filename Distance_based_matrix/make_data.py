@@ -85,7 +85,7 @@ class DataMake:
         if type == "LogFC2":
             add_info = add_info.loc[:, ["gene_short_na", "Root_TPM", "Leaf_TPM"]]
             add_info.columns = ["id", "Root_TPM", "Leaf_TPM"]
-            position_data = pd.merge(position_data, add_info, on='id')
+            position_data = pd.merge(position_data, add_info, on='id', how='left')
 
         ### extract expression values of each points
         elif type == "Coexpression":
@@ -229,7 +229,6 @@ class DataMake:
 
                 ### direction of each genes
                 elif type == "Direction":
-
                     if np.isnan(dist[yi][xi]):
                         first_direction = "nan"
                         second_direction = "nan"
@@ -273,7 +272,7 @@ class DataMake:
                         )
                     )
 
-        return hovertext
+        return np.array(hovertext)
 
 
 ### for phylogenetic distance

@@ -62,6 +62,9 @@ class BarGraph:
 
 
 if __name__ == "__main__":
+
     bar_graph = BarGraph("sample_data/tomato_clade.csv", "original_data/7species.tree", "sample_data/tomato_MADA.csv", "Conserved", "MADA", "Arabidopsis")
+    # bar_graph = BarGraph("sample_data/tomato_clade.csv", "original_data/asterids.nwk", "sample_data/tomato_root_leaf_TPM.csv", "Conserved", "LogFC2", "Coffea")
+    # bar_graph = BarGraph("sample_data/tomato_clade.csv", "original_data/tomato_root_leaf_TPM.csv", "sample_data/tomato_MADA.csv", "LogFC2", "MADA", "Arabidopsis")
     # bar_graph = BarGraph("sample_data/tomato_clade.csv", "original_data/tomato_MADA.csv", "sample_data/tomato_root_leaf_TPM.csv", "MADA", "LogFC2", "Arabidopsis")
     bar_graph.draw_bargraph()

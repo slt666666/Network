@@ -159,7 +159,7 @@ class TestParams(Enum):
     PhyloDistance = dict(
         clade_csv=clade_file,
         gff_csv=gff_file,
-        ordered_csv=None,
+        ordered_csv=ordered_file,
         nexus_tree=tree_file,
         threshold=phylogenetic_distance_threshold,
         matrix_type="Distance",
@@ -169,7 +169,7 @@ class TestParams(Enum):
     PhyloLogFC2 = dict(
         clade_csv=clade_file,
         gff_csv=gff_file,
-        ordered_csv=None,
+        ordered_csv=ordered_file,
         nexus_tree=tree_file,
         threshold=phylogenetic_distance_threshold,
         matrix_type="LogFC2",
@@ -179,7 +179,7 @@ class TestParams(Enum):
     PhyloCoexpression = dict(
         clade_csv=clade_file,
         gff_csv=gff_file,
-        ordered_csv=None,
+        ordered_csv=ordered_file,
         nexus_tree=tree_file,
         threshold=phylogenetic_distance_threshold,
         matrix_type="Coexpression",
@@ -189,7 +189,7 @@ class TestParams(Enum):
     PhyloMADA = dict(
         clade_csv=clade_file,
         gff_csv=gff_file,
-        ordered_csv=None,
+        ordered_csv=ordered_file,
         nexus_tree=tree_file,
         threshold=phylogenetic_distance_threshold,
         matrix_type="MADA",

@@ -24,10 +24,28 @@ class DistanceBasedMatrix:
         data_make = make_data.DataMake(self.clade_csv, self.gff_csv, self.ordered_csv, self.threshold, self.matrix_type, self.add_info)
         return data_make.make()
 
-    def draw_heatmap(self, filename):
+    def remove_na_row_columns(self, z_data, hovertext, position_data):
+
+        if self.matrix_type == "MADA":
+            rest_index = sum(np.isnan(z_data)) != z_data.shape[0]
+            z_data = z_data[rest_index[::-1], :][:, rest_index]
+            hovertext = hovertext[rest_index[::-1], :][:, rest_index]
+            position_data = position_data.loc[rest_index, :]
+
+        else:
+            rest_index = sum(z_data) != self.threshold * z_data.shape[0]
+            z_data = z_data[rest_index[::-1], :][:, rest_index]
+            hovertext = hovertext[rest_index[::-1], :][:, rest_index]
+            position_data = position_data.loc[rest_index, :]
+
+        return z_data, hovertext, position_data
+
+    def draw_heatmap(self, filename, remove_na=False):
 
         ### make dataset
         z_data, hovertext, position_data = self.make_data()
+
+        z_data, hovertext, position_data = self.remove_na_row_columns(z_data, hovertext, position_data)
 
         id_clades = position_data["id_clade"]
         gene_num = position_data.shape[0]
@@ -160,8 +178,8 @@ if __name__ == "__main__":
         "PhyloMADA" : "PhyloDistance" + MADA motif HMM scores
     '''
 
-    matrix_type = "LogFC2"
-
-    Matrix = DistanceBasedMatrix(**parameters.TestParams[matrix_type].value)
+    # matrix_type = "PhyloMADA"
+    #
+    # # Matrix = DistanceBasedMatrix(**parameters.TestParams[matrix_type].value)
     # Matrix = PhylogeneticDistanceBasedMatrix(**parameters.TestParams[matrix_type].value)
-    Matrix.draw_heatmap("sample.html")
+    # Matrix.draw_heatmap("MADA.html")

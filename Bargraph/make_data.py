@@ -56,9 +56,13 @@ class DataMake:
                 Spinach="Spo",
                 Sugarbeet="Bv",
                 Ashtree="FRAEX",
-                Sweetpotato="itf"
+                Sweetpotato="itf",
+                Potato="PGSC",
+                MonkeyFlower="Migut",
+                Tobbaco="Niben",
+                Pepper="CA",
+                Kiwifruit="Achn"
             )
-
 
             ### extract species specific (tomato/other) ids
             tomato_ids = distances.index[distances.index.str.contains("Solyc")].values
@@ -77,21 +81,35 @@ class DataMake:
             bar_data = MADA["HMM_score"]
 
         elif self.bar_type == "LogFC2":
-            pass
+
+            LogFC2 = pd.read_csv(self.bar_info, index_col=0)
+            LogFC2 = LogFC2.loc[:, ["Root_TPM", "Leaf_TPM"]]
+            LogFC2.columns = ["Root_TPM", "Leaf_TPM"]
+
+            ### calculate logFC2
+            logFC2_values = np.log2(LogFC2["Root_TPM"]) - np.log2(LogFC2["Leaf_TPM"])
+
+            logFC2_values[logFC2_values > 10] = 10
+            logFC2_values[logFC2_values < -10] = -10
+            logFC2_values[np.isnan(logFC2_values)] = 0
+
+            LogFC2["LogFC2"] = logFC2_values
+            LogFC2 = LogFC2.sort_values("LogFC2")
+            bar_data = LogFC2["LogFC2"]
 
         return bar_data
 
     ### make color list of each bar
     def make_colors(self, ordered_ids):
 
-        base = 'cyan'
-        colors = pd.Series([base]*len(ordered_ids.values))
-
         if self.color_type == "Conserved":
             pass
 
         ### to colore MADA genes
         elif self.color_type == "MADA":
+
+            base = 'cyan'
+            colors = pd.Series([base]*len(ordered_ids.values))
 
             MADA = pd.read_csv(self.color_info)
             MADA = MADA.loc[:, ["ID", "HMM score", "Seq-F"]]
@@ -112,6 +130,9 @@ class DataMake:
         ### to color Root/Leaf specific
         elif self.color_type == "LogFC2":
 
+            base = 'rgb(120, 120, 120)'
+            colors = pd.Series([base]*len(ordered_ids.values))
+
             LogFC2 = pd.read_csv(self.color_info)
             LogFC2 = LogFC2.loc[:, ["gene_short_na", "Root_TPM", "Leaf_TPM"]]
             LogFC2.columns = ["id", "Root_TPM", "Leaf_TPM"]
@@ -129,15 +150,15 @@ class DataMake:
             LogFC2["for_color"] = logFC2_values
 
             color_change_ids = ordered_ids.isin(LogFC2[LogFC2.loc[:, "for_color"] > 5].id.values)
-            colors[color_change_ids] = 'rgb(255, 0, 0)'
+            colors[color_change_ids] = 'rgb(165,0,38)'
             color_change_ids = ordered_ids.isin(LogFC2[(LogFC2.loc[:, "for_color"] <= 5) & (LogFC2.loc[:, "for_color"] > 0)].id.values)
-            colors[color_change_ids] = 'rgb(255, 120, 120)'
+            colors[color_change_ids] = 'rgb(244,109,67)'
             color_change_ids = ordered_ids.isin(LogFC2[LogFC2.loc[:, "for_color"] == 0].id.values)
             colors[color_change_ids] = 'rgb(120, 120, 120)'
             color_change_ids = ordered_ids.isin(LogFC2[(LogFC2.loc[:, "for_color"] < 0) & (LogFC2.loc[:, "for_color"] > -5)].id.values)
-            colors[color_change_ids] = 'rgb(120, 120, 255)'
+            colors[color_change_ids] = 'rgb(116,173,209)'
             color_change_ids = ordered_ids.isin(LogFC2[LogFC2.loc[:, "for_color"] < -5].id.values)
-            colors[color_change_ids] = 'rgb(0, 0, 255)'
+            colors[color_change_ids] = 'rgb(49,54,149)'
 
         return colors, colors_data
 
@@ -168,7 +189,7 @@ class DataMake:
             elif self.color_type == "LogFC2":
                 try:
                     LogFC2 = colors_data.loc[colors_data["id"] == id, "LogFC2"].values[0]
-                    bar_text.append("LogFC2: {} <br />clade: {}".format(LogFC2, clade))
+                    bar_text.append("LogFC2: {} <br />clade: {}".format('{:.4f}'.format(LogFC2), clade))
                 except:
                     bar_text.append("clade: {}".format(clade))
 
@@ -201,7 +222,7 @@ class DataMake:
             try:
                 arrow_info = dict(
                     x=np.where(bar_data.index.values == k)[0][0],
-                    y=bar_data.loc[k],
+                    y=bar_data.loc[k] if bar_data.loc[k] >= 0 else 0,
                     xref='x',
                     yref='y',
                     text=v,
@@ -224,6 +245,32 @@ class DataMake:
         )
         annotations.append(mean_info)
 
+        # if self.color_type == "MADA":
+        #     pass
+        # elif self.color_type == "LogFC2":
+        #
+        #     ### tribe info
+        #     mean_info = dict(
+        #         x = 5,
+        #         y = 50,
+        #         text = "Root",
+        #         arrowhead = 7,
+        #         arrowcolor = 'rgb(165,0,38)',
+        #         ax=22,
+        #         ay=0,
+        #     )
+        #     annotations.append(mean_info)
+        #     mean_info = dict(
+        #         x = 10,
+        #         y = 50,
+        #         text = "Leaf",
+        #         arrowhead = 7,
+        #         arrowcolor = 'rgb(49,54,149)',
+        #         ax=22,
+        #         ay=0,
+        #     )
+        #     annotations.append(mean_info)
+
         return annotations
 
     ### make title
@@ -233,12 +280,18 @@ class DataMake:
             title = 'Conserved btw Tomato/{}'.format(self.plant)
 
         elif self.bar_type == "MADA":
-            title = 'HMM score'.format(self.plant)
+            title = 'HMM score'
+
+        elif self.bar_type == "LogFC2":
+            title = 'LogFC2 of Root/Leaf TPM'
 
         if self.color_type == "Conserved":
             pass
 
         elif self.color_type == "MADA":
             title = title + " & colored MADA"
+
+        elif self.color_type == "LogFC2":
+            title = title + " & colored LogFC2 of Root/Leaf TPM"
 
         return title
