@@ -45,7 +45,8 @@ class DistanceBasedMatrix:
         ### make dataset
         z_data, hovertext, position_data = self.make_data()
 
-        z_data, hovertext, position_data = self.remove_na_row_columns(z_data, hovertext, position_data)
+        if remove_na:
+            z_data, hovertext, position_data = self.remove_na_row_columns(z_data, hovertext, position_data)
 
         id_clades = position_data["id_clade"]
         gene_num = position_data.shape[0]

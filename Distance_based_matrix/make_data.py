@@ -294,7 +294,7 @@ class PhylogeneticDataMake(DataMake):
         clade_info.columns = ["id", "clade"]
 
         ### distance info
-        tree = dendropy.Tree.get(path=self.nexus_tree, schema="nexus")
+        tree = dendropy.Tree.get(path=self.nexus_tree, schema="nexus", preserve_underscores=True)
 
         ### merge data & check other information
         position_data = clade_info
@@ -307,8 +307,12 @@ class PhylogeneticDataMake(DataMake):
             position_data = position_data.sort_values(["clade", "id"])
         else:
             NLR_order = pd.read_csv(self.ordered_csv, header=None)
+            ordered_list = []
+            for i in NLR_order.iloc[:, 0].values:
+                if i in position_data["id"].values:
+                    ordered_list.append(i)
             position_data.index = position_data["id"].values
-            position_data = position_data.loc[NLR_order.iloc[:, 0].values, :]
+            position_data = position_data.loc[ordered_list, :]
 
         position_data["id_clade"] = position_data["id"].str.cat(position_data["clade"], sep="-")
 
@@ -343,7 +347,6 @@ class PhylogeneticDataMake(DataMake):
         dist = pd.DataFrame(dist)
         dist.index = labels
         dist.columns = labels
-
         dist = dist.loc[position_data.id, position_data.id]
         dist = np.array(dist)
         dist = np.flip(dist, 0)
