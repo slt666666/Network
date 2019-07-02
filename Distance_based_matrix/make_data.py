@@ -42,12 +42,11 @@ class DataMake:
 
         ### each gff information
         ids = position_data["id"].values
-        chrs = position_data["chr"].values
         clades = position_data["clade"].values
         starts = position_data["start"].values
 
         ### make distance matrix
-        dist = self.make_dist(starts, chrs)
+        dist = self.make_dist(position_data)
 
         ### setting z_data for heatmap
         z_data = self.make_z_data(dist, matrix_type, position_data)
@@ -57,24 +56,41 @@ class DataMake:
 
         return z_data, hovertext, position_data
 
-    ### make distance matrix
-    def make_dist(self, starts, chrs):
+    def make_dist(self, data_for_dist):
 
-        ### calculate distance all combination
-        dist = np.stack([np.array(starts), np.zeros(len(starts))], 1)
-        dist = distance.cdist(dist, dist, metric="euclidean")
-        dist = pd.DataFrame(dist)
+        ### make distance matrix
+        chrs = data_for_dist["chr"].values
+        dim = data_for_dist.shape[0]
+        start_position = data_for_dist.loc[:, "start"]
+        end_position = data_for_dist.loc[:, "end"]
+        start_matrix = np.repeat(np.array(start_position), dim).reshape(dim, dim).T
+        end_matrix = np.repeat(np.array(end_position), dim).reshape(dim, dim)
 
-        dist.index = chrs
-        dist.columns = chrs
+        distance = start_matrix - end_matrix
+        distance = np.triu(distance, 1)
+        distance = distance + distance.T
+
+        distance = pd.DataFrame(distance)
+        distance.index = chrs
+        distance.columns = chrs
 
         ### set np.nan to diffrent chromosome gene pair
-        for each_chr in dist.columns:
-            dist.loc[dist.index != each_chr, each_chr] = np.nan
-        dist = np.array(dist)
-        dist = np.flip(dist, 0)
+        for each_chr in distance.columns:
+            distance.loc[distance.index != each_chr, each_chr] = np.nan
 
-        return dist
+        ### fix some misordered gene distance
+        mistake_index = np.where(distance < 0)
+        for i in range(len(mistake_index[0])):
+            first = data_for_dist.iloc[mistake_index[0][i], :]
+            second = data_for_dist.iloc[mistake_index[1][i], :]
+            if first.start < second.start:
+                distance.iloc[mistake_index[0][i], mistake_index[1][i]] = second.start - first.end
+            else:
+                distance.iloc[mistake_index[0][i], mistake_index[1][i]] = first.start - second.end
+
+        distance = np.array(distance)
+        distance = np.flip(distance, 0)
+        return distance
 
     ### add additional information
     def make_additional_data(self, position_data, type, add_info):

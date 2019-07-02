@@ -18,14 +18,40 @@ class DataMake:
         self.ID_info = ID_info
         self.threshold = threshold
 
-    def calc_distance(self, data_from_chr):
+    def calc_distance(self, position_data):
 
         ### make distance matrix
-        tmp_position_data = data_from_chr.iloc[:, 1]
-        tmp_position_data = np.stack([np.array(tmp_position_data), np.zeros(tmp_position_data.shape[0])], 1)
+        chrs = position_data["chr"].values
+        dim = position_data.shape[0]
+        start_position = position_data.loc[:, "start"]
+        end_position = position_data.loc[:, "end"]
+        start_matrix = np.repeat(np.array(start_position), dim).reshape(dim, dim).T
+        end_matrix = np.repeat(np.array(end_position), dim).reshape(dim, dim)
 
-        dist = distance.cdist(tmp_position_data, tmp_position_data, metric='euclidean')
-        return dist
+        distance = start_matrix - end_matrix
+        distance = np.triu(distance, 1)
+        distance = distance + distance.T
+
+        distance = pd.DataFrame(distance)
+        distance.index = chrs
+        distance.columns = chrs
+
+        ### set np.nan to diffrent chromosome gene pair
+        for each_chr in distance.columns:
+            distance.loc[distance.index != each_chr, each_chr] = np.nan
+
+        ### fix some misordered gene distance
+        mistake_index = np.where(distance < 0)
+        for i in range(len(mistake_index[0])):
+            first = position_data.iloc[mistake_index[0][i], :]
+            second = position_data.iloc[mistake_index[1][i], :]
+            if first.start < second.start:
+                distance.iloc[mistake_index[0][i], mistake_index[1][i]] = second.start - first.end
+            else:
+                distance.iloc[mistake_index[0][i], mistake_index[1][i]] = first.start - second.end
+
+        distance = np.array(distance)
+        return distance
 
     def make_position_data(self):
 
@@ -72,7 +98,6 @@ class DataMake:
         ### recursion methods
         ### search clustered gene with base gene
         threshold = self.threshold
-
         cluster_ids.append(base)
 
         ### end
@@ -135,7 +160,7 @@ class DataMake:
 
         position_data = self.make_position_data()
         clusters = self.make_clusters(position_data)
-        color_list = self.make_color_list(position_data)
+        # color_list = self.make_color_list(position_data)
 
         ### decide xaxis range and sort clusters based on number of genes
         widest_dist = 0
@@ -158,6 +183,10 @@ class DataMake:
             cluster_data = position_data.loc[position_data["id"].isin(cluster), :]
             base_line_start = cluster_data["start"].min()
             chrs.append(cluster_data["chr"].unique()[0])
+
+            ### make color_list
+            color_list = ["red", "blue", "green", "orange", "purple"]
+            color_list = dict(zip(cluster_data["clade"].unique(), color_list))
 
             ### string of axis number
             if i == 0:
