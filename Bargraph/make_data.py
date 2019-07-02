@@ -6,13 +6,14 @@ import pandas as pd
 
 class DataMake:
 
-    def __init__(self, clade_info, bar_info, color_info, bar_type, color_type, plant):
+    def __init__(self, clade_info, bar_info, color_info, bar_type, color_type, main_plant, other_plant):
         self.clade_info = clade_info
         self.bar_info = bar_info
         self.color_info = color_info
         self.bar_type = bar_type
         self.color_type = color_type
-        self.plant = plant
+        self.main_plant = main_plant
+        self.other_plant = other_plant
 
 
     def make(self):
@@ -33,7 +34,7 @@ class DataMake:
         if self.bar_type == "Conserved":
 
             ### extract phylogenetic distance data from tree
-            tree = dendropy.Tree.get(path=self.bar_info, schema="newick")
+            tree = dendropy.Tree.get(path=self.bar_info, schema="newick", preserve_underscores=True)
             pdm = tree.phylogenetic_distance_matrix()
 
             labels = []
@@ -61,14 +62,16 @@ class DataMake:
                 MonkeyFlower="Migut",
                 Tobbaco="Niben",
                 Pepper="CA",
-                Kiwifruit="Achn"
+                Kiwifruit="Achn",
+                Tomato="Solyc",
+                Lettuce="Lsat"
             )
 
             ### extract species specific (tomato/other) ids
-            tomato_ids = distances.index[distances.index.str.contains("Solyc")].values
-            other_ids = distances.index[distances.index.str.contains(plant_header[self.plant])].values
+            main_ids = distances.index[distances.index.str.contains(plant_header[self.main_plant])].values
+            other_ids = distances.index[distances.index.str.contains(plant_header[self.other_plant])].values
 
-            bar_data = distances.loc[tomato_ids, other_ids].min(axis=1)
+            bar_data = distances.loc[main_ids, other_ids].min(axis=1)
             bar_data = bar_data.sort_values()
 
         ### get MADA HMM scores of all NLRs
@@ -277,7 +280,7 @@ class DataMake:
     def make_title(self):
 
         if self.bar_type == "Conserved":
-            title = 'Conserved btw Tomato/{}'.format(self.plant)
+            title = 'Conserved btw {}/{}'.format(self.main_plant, self.other_plant)
 
         elif self.bar_type == "MADA":
             title = 'HMM score'
