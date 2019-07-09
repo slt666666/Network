@@ -79,7 +79,7 @@ class DataMake:
         position_data = pd.merge(position_data, clade_info, on='id')
         position_data = pd.merge(position_data, MADA_info, on='id', how='left')
 
-        position_data = position_data.sort_values(["id", "start"])
+        position_data = position_data.sort_values(["clade", "id"])
 
         return position_data
 
@@ -156,11 +156,35 @@ class DataMake:
 
         return clusters
 
+    def make_summary(self, clusters, position_data):
+        gene_numbers = []
+        gene_num = 0
+        hetero = 0
+        homo = 0
+
+        for cluster in clusters:
+            each = position_data[position_data["id"].isin(cluster)]
+            clade = each.clade
+            gene_numbers.append(each.shape[0])
+            gene_num += each.shape[0]
+            if len(clade.unique()) > 1:
+                hetero += 1
+            else:
+                homo += 1
+        print(position_data.shape[0])
+        print(len(clusters))
+        print(max(gene_numbers))
+        print(min(gene_numbers))
+        print(gene_num)
+        print(homo)
+        print(hetero)
+
     def make_graph_info(self):
 
         position_data = self.make_position_data()
         clusters = self.make_clusters(position_data)
         # color_list = self.make_color_list(position_data)
+        self.make_summary(clusters, position_data)
 
         ### decide xaxis range and sort clusters based on number of genes
         widest_dist = 0
@@ -254,8 +278,8 @@ class DataMake:
 
                 ### check MADA
                 if each_gene_data.HMM_score > 0:
-                    MADA_x.append(each_gene_data.end if each_gene_data.direction == "+" else each_gene_data.start)
-                    MADA_size.append(each_gene_data.HMM_score * 2 / 3)
+                    MADA_x.append(each_gene_data.start if each_gene_data.direction == "+" else each_gene_data.end)
+                    MADA_size.append(each_gene_data.HMM_score)
                     MADA_symbol.append(8 if each_gene_data.direction == "+" else 7)
                     gene_text += "<br>HMM_score:{}, Seq-F:{}".format(each_gene_data.HMM_score, each_gene_data.Seq_F)
 
