@@ -161,6 +161,11 @@ class DataMake:
         gene_num = 0
         hetero = 0
         homo = 0
+        MADA_noMADA = 0
+        MADAlike_noMADA = 0
+        ID_noID = 0
+        MADA_ID = 0
+        MADAlike_ID = 0
 
         for cluster in clusters:
             each = position_data[position_data["id"].isin(cluster)]
@@ -171,6 +176,16 @@ class DataMake:
                 hetero += 1
             else:
                 homo += 1
+
+            if sum(each["Seq_F"] > 30) > 0:
+                each.loc[each["Seq_F"] > 30, "HMM_score"] = np.nan
+            if sum(each.HMM_score >= 10) > 0 and sum(each.HMM_score.isnull()) > 0:
+                MADA_noMADA += 1
+            if (sum(each.HMM_score > 0) - sum(each.HMM_score >= 10)) > 0 and sum(each.HMM_score.isnull()) > 0:
+                MADAlike_noMADA += 1
+            if sum(each.Integrated) > 0 and sum(~each.Integrated) > 0:
+                ID_noID += 1
+
         print(position_data.shape[0])
         print(len(clusters))
         print(max(gene_numbers))
@@ -178,6 +193,9 @@ class DataMake:
         print(gene_num)
         print(homo)
         print(hetero)
+        print(MADA_noMADA)
+        print(MADAlike_noMADA)
+        print(ID_noID)
 
     def make_graph_info(self):
 
@@ -202,6 +220,7 @@ class DataMake:
 
         lines = []
         chrs = []
+        annotations = []
         for i, cluster_index in enumerate(np.argsort(element_num)[::-1]):
             cluster = clusters[cluster_index]
             cluster_data = position_data.loc[position_data["id"].isin(cluster), :]
@@ -236,116 +255,91 @@ class DataMake:
             )
 
             ### draw each gene arrow and line and MADA and ...etc
-            gene_arrow_x = []
-            gene_symbol = []
-            gene_texts = []
-            gene_color = []
-            MADA_x = []
-            MADA_size = []
-            MADA_symbol = []
-            Integrated_x = []
             for j in range(cluster_data.shape[0]):
 
                 ### check duplicate position (Not Yet)
                 each_gene_data = cluster_data.iloc[j, :]
+                start_x = each_gene_data.start if each_gene_data.direction == "+" else each_gene_data.end
+                end_x = each_gene_data.end if each_gene_data.direction == "+" else each_gene_data.start
 
-                lines.append(
-                    dict(
-                        type="line",
-                        xref="x{}".format(axis_num),
-                        yref="y{}".format(axis_num),
-                        x0=each_gene_data.start,
-                        y0=i+100,
-                        x1=each_gene_data.end,
-                        y1=i+100,
-                        line=dict(
-                            color=color_list[each_gene_data.clade],
-                            width=15
-                        ),
-                        layer="below"
+                ### draw gene arrow
+                annotations.append(
+                        go.layout.Annotation(
+                            ax=start_x,
+                            ay=i+100,
+                            x=end_x,
+                            y=i+100,
+                            xref="x{}".format(axis_num),
+                            yref="y{}".format(axis_num),
+                            axref="x{}".format(axis_num),
+                            ayref="y{}".format(axis_num),
+                            arrowhead=2,
+                            arrowsize=1,
+                            arrowwidth=5,
+                            arrowcolor=color_list[each_gene_data.clade]
+                        )
                     )
-                )
-                gene_color.append(color_list[each_gene_data.clade])
+
                 gene_text = "{}<br>{} {}-{}<br>{}".format(each_gene_data.id, each_gene_data.chr, each_gene_data.start, each_gene_data.end, each_gene_data.clade)
 
-                ### check direction of gene
-                if each_gene_data.direction == "+":
-                    gene_arrow_x.append(each_gene_data.end)
-                    gene_symbol.append(8)
-                elif each_gene_data.direction == "-":
-                    gene_arrow_x.append(each_gene_data.start)
-                    gene_symbol.append(7)
+                ### add MADA shape
+                if each_gene_data.HMM_score > 0 and each_gene_data.Seq_F < 30:
 
-                ### check MADA
-                if each_gene_data.HMM_score > 0:
-                    MADA_x.append(each_gene_data.start if each_gene_data.direction == "+" else each_gene_data.end)
-                    MADA_size.append(each_gene_data.HMM_score)
-                    MADA_symbol.append(8 if each_gene_data.direction == "+" else 7)
+                    ### add hover_text
                     gene_text += "<br>HMM_score:{}, Seq-F:{}".format(each_gene_data.HMM_score, each_gene_data.Seq_F)
 
-                gene_texts.append(gene_text)
+                    MADA = go.Scatter(
+                        x=[start_x],
+                        y=[i+100],
+                        xaxis="x{}".format(axis_num),
+                        yaxis="y{}".format(axis_num),
+                        marker=dict(
+                            color='#f58231' if each_gene_data.HMM_score > 10 else '#4363d8',
+                            symbol=2,
+                            size=15,
+                        ),
+                        showlegend=False,
+                        mode="markers",
+                        hoverinfo="none",
+                    )
+                    fig.append_trace(MADA, i+1, 1)
 
-                ### check integrated domain
+                ### draw Integrated domains
                 if each_gene_data.Integrated:
-                    Integrated_x.append(each_gene_data.start if each_gene_data.direction == "+" else each_gene_data.end)
+                    ID = go.Scatter(
+                        x=[end_x],
+                        y=[i+100],
+                        xaxis="x{}".format(axis_num),
+                        yaxis="y{}".format(axis_num),
+                        marker=dict(
+                            color="black",
+                            symbol=8 if each_gene_data.direction == "+" else 7,
+                            size=15,
+                        ),
+                        showlegend=False,
+                        mode="markers",
+                        hoverinfo="none",
+                    )
+                    fig.append_trace(ID, i+1, 1)
 
-            ### draw triangle of arrows
-            genes = go.Scatter(
-                x=gene_arrow_x,
-                y=np.ones(len(gene_arrow_x)) * (i+100),
-                xaxis="x{}".format(axis_num),
-                yaxis="y{}".format(axis_num),
-                marker=dict(
-                    color=gene_color,
-                    symbol=gene_symbol,
-                    size=30,
-                ),
-                showlegend=False,
-                mode="markers",
-                text=gene_texts,
-                hoverinfo="x+text",
-            )
-            fig.append_trace(genes, i+1, 1)
-
-            ### draw triangle of MADAs
-            if len(MADA_x) > 0:
-                MADAs = go.Scatter(
-                    x=MADA_x,
-                    y=np.ones(len(MADA_x)) * (i+100),
+                ### add hover text
+                gene = go.Scatter(
+                    x=[end_x],
+                    y=[i+100],
                     xaxis="x{}".format(axis_num),
                     yaxis="y{}".format(axis_num),
-                    marker=dict(
-                        color="black",
-                        symbol=MADA_symbol,
-                        size=MADA_size,
-                    ),
                     showlegend=False,
-                    mode="markers",
-                    hoverinfo="none",
+                    mode="none",
+                    text=gene_text,
+                    hoverinfo="x+text",
                 )
-                fig.append_trace(MADAs, i+1, 1)
-
-            ### draw Integrated domains
-            if len(Integrated_x) > 0:
-                IDs = go.Scatter(
-                    x=Integrated_x,
-                    y=np.ones(len(Integrated_x)) * (i+100),
-                    xaxis="x{}".format(axis_num),
-                    yaxis="y{}".format(axis_num),
-                    marker=dict(
-                        color="black",
-                        symbol=3,
-                        size=15,
-                    ),
-                    showlegend=False,
-                    mode="markers",
-                    hoverinfo="none",
-                )
-                fig.append_trace(IDs, i+1, 1)
+                fig.append_trace(gene, i+1, 1)
 
         fig['layout'].update(
+            annotations=annotations,
             shapes=lines,
-            height=len(clusters)*150
+            height=len(clusters)*150,
+            width=1000
         )
 
         for i in range(len(clusters)):
